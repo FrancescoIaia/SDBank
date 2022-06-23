@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<head>
+    <meta charset="UTF-8">
+    <title>SDBank</title>
+</head>
+<body>
+<div class="container-fluid" style="background-color: #3949ab; color: white;">
+    <div class="row align-items-start">
+        <div class="col-2 align-self-end">
+            <a href="/" class="link-light text-decoration-none"><h1 class="mb-1">SD Bank</h1></a>
+        </div>
+        <div class="col-2 align-self-end">
+            <a href="/transfer" class="link-light text-decoration-none"><p class="mb-1">Trasferisci Denaro</p></a>
+        </div>
+        <div class="col text-center align-self-center">
+            <img src="https://upload.wikimedia.org/wikipedia/it/thumb/7/7d/Logo_Universit%C3%A0_Milano-Bicocca.svg/1200px-Logo_Universit%C3%A0_Milano-Bicocca.svg.png"
+                 width="50" height="50">
+        </div>
+        <div class="col align-self-end" style="text-align: right; color: #eeeeee">
+            Powered by Svendra and Francoiaia
+        </div>
+    </div>
+</div>
+<div class="container-sm mt-3">
+    <div class="mb-3 form-floating">
+        <input type="text" id="idAccount" class="form-control" placeholder="Id">
+        <label for="idAccount">Id</label>
+    </div>
+    <button type="button" class="btn btn-primary" onclick="loadXMLDoc()"> Cerca</button>
+</div>
+<div id="risposta" style="visibility: hidden" class="container mt-4">
+    <h2 class="mb-5" style="color: #3949ab">Informazioni Account</h2>
+    <div class="row align-items-start">
+        <div class="card mb-3 col-3 text-center" style="width: 20rem;">
+            <img src="https://www.studiofrancesconi.com/wp-content/uploads/2019/03/placeholder-profile-sq.jpg"
+                 class="card-img-top">
+            <div class="card-body">
+                <div id="id" class="col"></div>
+                <div id="nome" class="col"></div>
+                <div id="cognome" class="col"></div>
+                <div id="saldo" class="col"></div>
+
+            </div>
+        </div>
+        <div class="col-1"></div>
+        <div class="col-8">
+            <h3>Tabella Movimenti</h3>
+            <table class="table mb-5" id="movimenti">
+                <thead>
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Quantità</th>
+                    <th scope="col">Tipo</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th id="idFirstMovement"></th>
+                    <th id="qtFirstMovement"></th>
+                    <th id="tipoFirstMovement"></th>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <h3>Tabella Transazioni</h3>
+        <table class="table" id="transazioni">
+            <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Mittente</th>
+                <th scope="col">Destinatario</th>
+                <th scope="col">Quantità</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th id="idFirstTransaction"></th>
+                <th id="mtFirstTransaction"></th>
+                <th id="sndFirstTransaction"></th>
+                <th id="qtFirstTransaction"></th>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function loadXMLDoc() {
+        let xhttp = new XMLHttpRequest();
+        let idAccount = document.getElementById("idAccount").value;
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+
+                const obj = JSON.parse(this.response);
+
+                const divRisposta = document.getElementById("risposta");
+                divRisposta.style.visibility = "visible";
+
+                console.log(obj);
+
+                const idElement = document.getElementById("id");
+                idElement.innerHTML = "ID: " + obj.id;
+
+                const nomeElement = document.getElementById("nome");
+                nomeElement.innerHTML = "Nome: " + obj.name;
+
+                const cognomeElement = document.getElementById("cognome");
+                cognomeElement.innerHTML = "Cognome: " + obj.surname;
+
+                const saldoElement = document.getElementById("saldo");
+                saldoElement.innerHTML = "Saldo: " + obj.balance + "€";
+
+                const movimentiTable = document.getElementById("movimenti");
+                var rowCount = movimentiTable.rows.length;
+                var tableHeaderRowCount = 2;
+                for (var i = tableHeaderRowCount; i < rowCount; i++) {
+                    movimentiTable.deleteRow(tableHeaderRowCount);
+                }
+
+                const idFirstElement = document.getElementById("idFirstMovement");
+                idFirstElement.innerHTML = obj.movements[0].id;
+
+                const qtFirstElement = document.getElementById("qtFirstMovement");
+                qtFirstElement.innerHTML = obj.movements[0].amount;
+
+                const tipoFirstElement = document.getElementById("tipoFirstMovement");
+                tipoFirstElement.innerHTML = obj.movements[0].type;
+
+                for (let i = 1; i < obj.movements.length; i++) {
+                    let row = movimentiTable.insertRow();
+                    let cell1 = row.insertCell(0);
+                    let cell2 = row.insertCell(1);
+                    let cell3 = row.insertCell(2);
+                    cell1.innerHTML = obj.movements[i].id;
+                    cell2.innerHTML = obj.movements[i].amount;
+                    cell3.innerHTML = obj.movements[i].type;
+                }
+
+                const transactionTable = document.getElementById("transazioni");
+                rowCount = transactionTable.rows.length;
+                tableHeaderRowCount = 2;
+                for (let i = tableHeaderRowCount; i < rowCount; i++) {
+                    transactionTable.deleteRow(tableHeaderRowCount);
+                }
+
+                const idFirstTransaction = document.getElementById("idFirstTransaction");
+                idFirstTransaction.innerHTML = obj.transactions[0].id;
+
+                const mtFirstTransaction = document.getElementById("mtFirstTransaction");
+                mtFirstTransaction.innerHTML = obj.transactions[0].sender;
+
+                const sndFirstTransaction = document.getElementById("sndFirstTransaction");
+                sndFirstTransaction.innerHTML = obj.transactions[0].receiver;
+
+                const qtFirstTransaction = document.getElementById("qtFirstTransaction");
+                qtFirstTransaction.innerHTML = obj.transactions[0].amount;
+
+                for (let i = 1; i < obj.transactions.length; i++) {
+                    let row = transactionTable.insertRow();
+                    let cell1 = row.insertCell(0);
+                    let cell2 = row.insertCell(1);
+                    let cell3 = row.insertCell(2);
+                    let cell4 = row.insertCell(3);
+                    cell1.innerHTML = obj.transactions[i].id;
+                    cell2.innerHTML = obj.transactions[i].sender;
+                    cell3.innerHTML = obj.transactions[i].receiver;
+                    cell4.innerHTML = obj.transactions[i].amount;
+                }
+            } else if (this.readyState == 4) {
+                window.alert(this.response);
+
+                const divRisposta = document.getElementById("risposta");
+                divRisposta.style.visibility = "hidden";
+            }
+        };
+        if (idAccount.length === 20) {
+            xhttp.open("GET", "/api/detailedAccount/" + idAccount + "/", true);
+            xhttp.send();
+        } else {
+            const divRisposta = document.getElementById("risposta");
+            divRisposta.style.visibility = "hidden";
+            window.alert("Errore: inserisci un id da 20 cifre");
+        }
+    }
+</script>
+</body>
+</html>
